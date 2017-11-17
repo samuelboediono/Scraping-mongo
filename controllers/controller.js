@@ -7,6 +7,16 @@ var cheerio = require('cheerio');
 var Comment = require('../models/Comment.js');
 var Article = require('../models/Article.js');
 
+var mongojs = require("mongojs");
+
+var databaseUrl = "scraper";
+var collections = ["scrapedData"];
+
+var db = mongojs(databaseUrl, collections);
+db.on("error", function(error) {
+  console.log("Database Error:", error);
+});
+
 router.get("/", function (req, res) {
 	res.redirect("/scrape");
 });
@@ -27,50 +37,29 @@ router.get("/articles", function (req, res) {
 });
 
 router.get("/scrape", function (req, res) {
-	request("https://www.nytimes.com/", function (error, response, html) {
+	request("https://news.ycombinator.com/", function(error, response, html) {
+    var $ = cheerio.load(html);
+    $(".title").each(function(i, element) {
+      var title = $(element).children("a").text();
+      var link = $(element).children("a").attr("href");
 
-		var $ = cheerio.load(html);
-		var titles = [];
-
-		$("a.post-link-mask").each(function (i, element) {
-			var result = {};
-			result.title = $(element).text();
-			result.link = $(element).children().attr("href");
-			result.summary = $(this).children("div").text().trim() + "";
-
-			if (result.title !== "" && result.summary !== "") {
-				if(titles.indexOf(result.title) == -1) {
-					titles.push(result.title);
-					Article.count({ title: result.title}, function (err, test) {
-						if(test == 0) {
-							var entry = new Article (result);
-							entry.save(function (err, doc) {
-								if (err) {
-									console.log (err);
-								}
-								else {
-									console.log(doc);
-								}
-							});
-						}
-
-						else {
-							console.log("Not saved to DB.")
-						}
-					});
-				}
-
-				else {
-					console.log("Content is already there. Not saved to DB.")
-				}
-			}
-
-			else {
-				console.log("No content. Not saved to DB.")
-			}
-		});
-		res.redirect("/articles");
-	});
+      if (title && link) {
+        db.scrapedData.insert({
+          title: title,
+          link: link
+        },
+        function(err, inserted) {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            console.log(inserted);
+          }
+        });
+      }
+    });
+  });
+  res.redirect("/articles");
 });
 
 router.post("/add/comment/:id", function (req, res) {
