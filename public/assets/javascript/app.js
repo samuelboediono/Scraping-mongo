@@ -22,7 +22,6 @@ $(".delete-comment-button").on("click", function() {
 	var commentId = $(this).data("id");
 
 	var baseURL = window.location.origin;
-});
 
 	$.ajax({
 		url: baseURL + "/remove/comment/" + commentId,
@@ -33,3 +32,4 @@ $(".delete-comment-button").on("click", function() {
 	});
 
 	return false;
+});

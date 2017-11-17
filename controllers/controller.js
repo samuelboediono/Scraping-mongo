@@ -32,17 +32,17 @@ router.get("/scrape", function (req, res) {
 		var $ = cheerio.load(html);
 		var titles = [];
 
-		$("article.story").each(function (i, element) {
+		$("a.post-link-mask").each(function (i, element) {
 			var result = {};
-			result.title = $(this).children("header").children("h2").text().trim() + "";
-			result.link = "https://www.nytimes.com/" + $(this).children("header").children("h2").children("a").attr("href").trim();
+			result.title = $(element).text();
+			result.link = $(element).children().attr("href");
 			result.summary = $(this).children("div").text().trim() + "";
 
 			if (result.title !== "" && result.summary !== "") {
-				if(titles.indexOf(result.title) === -1) {
+				if(titles.indexOf(result.title) == -1) {
 					titles.push(result.title);
 					Article.count({ title: result.title}, function (err, test) {
-						if(test === 0) {
+						if(test == 0) {
 							var entry = new Article (result);
 							entry.save(function (err, doc) {
 								if (err) {
