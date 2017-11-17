@@ -1,9 +1,9 @@
-$(".add-comment-button").on("click", function() {
+$(".addButton").on("click", function() {
 	var articleId = $(this).data("id");
 
 	var baseURL = window.location.origin;
 
-	var formName = "form-add-" + articleId;
+	var formName = "formadded" + articleId;
 	var form = $("#" + formName);
 
 	$.ajax({
@@ -17,7 +17,7 @@ $(".add-comment-button").on("click", function() {
 	return false;
 });
 
-$(".delete-comment-button").on("click", function() {
+$(".deleteButton").on("click", function() {
 
 	var commentId = $(this).data("id");
 
